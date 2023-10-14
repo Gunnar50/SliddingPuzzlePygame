@@ -146,6 +146,55 @@ class Game:
         UIElement(430, 300, "High Score - %.3f" % (self.high_score if self.high_score > 0 else 0)).draw(self.screen)
         pygame.display.flip()
 
+    # My functions:
+    def moveDown(self, row, col):
+        self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
+
+    def moveUp(self, row, col):
+        self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col
+                                                                                                                       ]
+    def moveLeft(self, row, col):
+        self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
+
+    def moveRight(self, row, col):
+        self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
+
+    #Get the blank tile row and col positions
+    def get0TilePos(self):
+        for row, tiles in enumerate(self.tiles):
+            for col, tile in enumerate(tiles):
+                if(self.tiles_grid[row][col] == 0):
+                    return (row, col)
+    #Swap a tile with the blank tile
+    def swapTiles(self, tileRow, tileCol):
+        if(self.isSwapable(tileRow, tileCol)):
+            blankRow, blankCol = self.get0TilePos()
+            tempTile = self.tiles_grid[tileRow][tileCol]
+            self.tiles_grid[tileRow][tileCol] = self.tiles_grid[blankRow][blankCol]
+            self.tiles_grid[blankRow][blankCol] = tempTile
+
+    #check if a tile is adjacent to the blank tile (doesn't count diagonal placement)
+    def isSwapable(self, tileRow, tileCol):
+        for tile in self.getSwapableTiles():
+            if(self.tiles_grid[tileRow][tileCol] == tile):
+                return True
+        return False
+
+    #get all tiles that can be swaped with the blank tile
+    def getSwapableTiles(self):
+        swapableTiles = []
+        blankRow, blankCol = self.get0TilePos()
+        if(blankRow > 0):
+            swapableTiles.append(self.tiles_grid[blankRow - 1][blankCol])
+        if(blankRow < GAME_SIZE - 1):
+            swapableTiles.append(self.tiles_grid[blankRow + 1][blankCol])
+        if(blankCol > 0):
+            swapableTiles.append(self.tiles_grid[blankRow][blankCol - 1])
+        if(blankCol < GAME_SIZE - 1):
+            swapableTiles.append(self.tiles_grid[blankRow][blankCol + 1])
+        return swapableTiles
+
+
     def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -157,17 +206,19 @@ class Game:
                 for row, tiles in enumerate(self.tiles):
                     for col, tile in enumerate(tiles):
                         if tile.click(mouse_x, mouse_y):
-                            if tile.right() and self.tiles_grid[row][col + 1] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
+                            if(self.tiles_grid[row][col] != 0):
+                                self.swapTiles(row, col)
+                            # if tile.right() and self.tiles_grid[row][col + 1] == 0:
+                            #     self.moveRight(row, col)
 
-                            if tile.left() and self.tiles_grid[row][col - 1] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
+                            # if tile.left() and self.tiles_grid[row][col - 1] == 0:
+                            #     self.moveLeft(row, col)
 
-                            if tile.up() and self.tiles_grid[row - 1][col] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col]
+                            # if tile.up() and self.tiles_grid[row - 1][col] == 0:
+                            #     self.moveUp(row, col)
 
-                            if tile.down() and self.tiles_grid[row + 1][col] == 0:
-                                self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
+                            # if tile.down() and self.tiles_grid[row + 1][col] == 0:
+                            #     self.moveDown(row, col)
 
                             self.draw_tiles()
 
@@ -179,6 +230,8 @@ class Game:
                         if button.text == "Reset":
                             self.new()
 
+    
+    
 
 game = Game()
 while True:
