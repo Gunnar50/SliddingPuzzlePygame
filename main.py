@@ -4,6 +4,7 @@ import time
 from sprite import *
 from settings import *
 
+        
 
 class Game:
     def __init__(self):
@@ -18,6 +19,7 @@ class Game:
         self.start_timer = False
         self.elapsed_time = 0
         self.high_score = float(self.get_high_scores()[0])
+        self.last_move = ""
 
     def get_high_scores(self):
         with open("high_score.txt", "r") as file:
@@ -94,6 +96,7 @@ class Game:
         self.buttons_list = []
         self.buttons_list.append(Button(500, 100, 200, 50, "Shuffle", WHITE, BLACK))
         self.buttons_list.append(Button(500, 170, 200, 50, "Reset", WHITE, BLACK))
+        self.buttons_list.append(Button(500, 240, 200, 50, "DFS", WHITE, BLACK))
         self.draw_tiles()
 
     def run(self):
@@ -123,7 +126,7 @@ class Game:
             self.shuffle()
             self.draw_tiles()
             self.shuffle_time += 1
-            if self.shuffle_time > 120:
+            if self.shuffle_time > 0:
                 self.start_shuffle = False
                 self.start_game = True
                 self.start_timer = True
@@ -144,34 +147,103 @@ class Game:
             button.draw(self.screen)
         UIElement(550, 35, "%.3f" % self.elapsed_time).draw(self.screen)
         UIElement(430, 300, "High Score - %.3f" % (self.high_score if self.high_score > 0 else 0)).draw(self.screen)
+        UIElement(430, 500, "Last move: " + self.last_move).draw(self.screen)
         pygame.display.flip()
 
     # My functions:
+    # def DFS(self, moves, initial_state, lastMove):
+    #     if(len(moves) <= DPS_MAX_DEPTH):
+    #         curState = initial_state
+    #         curMove = ""
+    #         while curState != self.tiles_grid_completed:
+    #             possibleMoves = self.getSwapableTiles()
+    #             random.shuffle(possibleMoves)
+    #             for move in possibleMoves:
+    #                 cur0Row, cur0Col = self.get0TilePos()
+    #                 row, col = self.getTilePos(move)
+    #                 curMove = self.swapTilesOnBoard(row, col, curState)
+    #                 if(lastMove == curMove):
+    #                     self.swapTilesOnBoard(cur0Row, cur0Col, curState)
+    #                 else:
+    #                     lastMove = curMove
+    #                     moves.append(move)
+    #                     self.DFS(moves, curState, lastMove)
+    #                     if(len(moves) >= 1):
+    #                         moves.pop()
+    #         return moves
+                    
+    # def traceBackMoves(self, moves):
+    #     # if(len(moves) == 0):
+    #     #     UIElement(500, 200, "No solution for DFS").draw(self.screen)
+    #     # else:
+    #     moves.reverse()
+    #     for move in moves:
+    #             self.swapTiles(move)
+    #             self.draw_tiles()
+    #             # time.sleep(1)        
+    class Node:
+        def __init_(self, state, way):
+            self.state = state
+            self.way = way
+
+        def isGoal(self):
+            grid = [[x + y * GAME_SIZE for x in range(1, GAME_SIZE + 1)] for y in range(GAME_SIZE)]
+            grid[-1][-1] = 0
+            return self.state == grid
+        def 
+    def DFS(self, start):
+        start_state = self.Node(start, "")
+        frontier = [].append(start_state)
+        explored = []
+        depth = 0
+        while(len(frontier) != 0):
+            possibleStates = []
+            if(frontier[-1].isGoal()):
+
+
+        
+
     def moveDown(self, row, col):
         self.tiles_grid[row][col], self.tiles_grid[row + 1][col] = self.tiles_grid[row + 1][col], self.tiles_grid[row][col]
 
     def moveUp(self, row, col):
-        self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col
-                                                                                                                       ]
+        self.tiles_grid[row][col], self.tiles_grid[row - 1][col] = self.tiles_grid[row - 1][col], self.tiles_grid[row][col]
+
     def moveLeft(self, row, col):
         self.tiles_grid[row][col], self.tiles_grid[row][col - 1] = self.tiles_grid[row][col - 1], self.tiles_grid[row][col]
 
     def moveRight(self, row, col):
         self.tiles_grid[row][col], self.tiles_grid[row][col + 1] = self.tiles_grid[row][col + 1], self.tiles_grid[row][col]
 
+    def getTilePos(self, search_tile):
+            for row, tiles in enumerate(self.tiles):
+                for col, tile in enumerate(tiles):
+                    if(self.tiles_grid[row][col] == search_tile):
+                        return (row, col)
+                    
     #Get the blank tile row and col positions
     def get0TilePos(self):
-        for row, tiles in enumerate(self.tiles):
-            for col, tile in enumerate(tiles):
-                if(self.tiles_grid[row][col] == 0):
-                    return (row, col)
-    #Swap a tile with the blank tile
-    def swapTiles(self, tileRow, tileCol):
+        return self.getTilePos(0)
+
+    def swapTilesOnBoard(self, tileRow, tileCol, board):
         if(self.isSwapable(tileRow, tileCol)):
             blankRow, blankCol = self.get0TilePos()
-            tempTile = self.tiles_grid[tileRow][tileCol]
-            self.tiles_grid[tileRow][tileCol] = self.tiles_grid[blankRow][blankCol]
-            self.tiles_grid[blankRow][blankCol] = tempTile
+            tempTile = board[tileRow][tileCol]
+            board[tileRow][tileCol] = board[blankRow][blankCol]
+            board[blankRow][blankCol] = tempTile
+            if(tileRow < blankRow and tileCol == blankCol):
+                return "Up"
+            elif(tileRow > blankRow and tileCol == blankCol):
+                return "Down"
+            elif(tileRow == blankRow and tileCol < blankCol):
+                return "Left"
+            elif(tileRow == blankRow and tileCol > blankCol):
+                return "Right"
+        return "Invalid"
+            
+    #Swap a tile with the blank tile
+    def swapTiles(self, tileRow, tileCol):
+        return self.swapTilesOnBoard(tileRow, tileCol, self.tiles_grid)
 
     #check if a tile is adjacent to the blank tile (doesn't count diagonal placement)
     def isSwapable(self, tileRow, tileCol):
@@ -194,6 +266,7 @@ class Game:
             swapableTiles.append(self.tiles_grid[blankRow][blankCol + 1])
         return swapableTiles
 
+    
 
     def events(self):
         for event in pygame.event.get():
@@ -207,18 +280,7 @@ class Game:
                     for col, tile in enumerate(tiles):
                         if tile.click(mouse_x, mouse_y):
                             if(self.tiles_grid[row][col] != 0):
-                                self.swapTiles(row, col)
-                            # if tile.right() and self.tiles_grid[row][col + 1] == 0:
-                            #     self.moveRight(row, col)
-
-                            # if tile.left() and self.tiles_grid[row][col - 1] == 0:
-                            #     self.moveLeft(row, col)
-
-                            # if tile.up() and self.tiles_grid[row - 1][col] == 0:
-                            #     self.moveUp(row, col)
-
-                            # if tile.down() and self.tiles_grid[row + 1][col] == 0:
-                            #     self.moveDown(row, col)
+                                self.last_move = self.swapTiles(row, col)
 
                             self.draw_tiles()
 
@@ -227,8 +289,13 @@ class Game:
                         if button.text == "Shuffle":
                             self.shuffle_time = 0
                             self.start_shuffle = True
+                            # moves = []
+                            # self.DFS(moves, self.tiles_grid, "")
+                            # self.traceBackMoves(moves)
                         if button.text == "Reset":
                             self.new()
+                        # if button.text == "DFS":
+                        #     pass
 
     
     

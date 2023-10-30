@@ -12,3 +12,6 @@ FPS = 60
 title = "Sliding Puzzle Game"
 TILESIZE = 128
 GAME_SIZE = 3
+
+#Search algorthim hyperparameters
+DPS_MAX_DEPTH = 2
